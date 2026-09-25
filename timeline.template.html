@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Waterloo Computer Science · Faculty timeline</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#202322;background:#f7f7f4;font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:22px 28px 18px;border-top:5px solid #f3ce44;background:white}h1{font:500 26px Georgia,serif;margin:0 0 6px}header p{margin:0;color:#656960;font-size:13px}.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 28px;border-block:1px solid #dfe1da;background:#fbfbf9}button,input{font:inherit}button{cursor:pointer;border:1px solid #c9cdc3;border-radius:5px;background:white;color:#202322;padding:8px 12px;min-height:36px}button:hover{background:#f0f1eb}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,#viewport:focus-visible{outline:3px solid #bd950a;outline-offset:3px}#search{width:230px;padding:8px 10px;border:1px solid #c9cdc3;border-radius:5px}#count{color:#666;font-size:12px;min-width:86px}.divider{height:24px;border-left:1px solid #d9dcd3;margin:0 4px}.zoom{display:flex;align-items:center;gap:8px}#zoom{width:140px;accent-color:#846c18}#scale{width:43px;font-variant-numeric:tabular-nums;font-size:12px}.hint{margin-left:auto;color:#71756c;font-size:12px}#viewport{height:calc(100vh - 245px);min-height:330px;overflow:auto;position:relative;background:white;overscroll-behavior:contain}#stage{position:relative;isolation:isolate}#stage>svg{display:block;position:absolute;inset:0;width:100%;height:100%}#overlay{overflow:visible}.hit{fill:transparent;cursor:pointer;outline:none}.hit:hover,.hit:focus{fill:#b58d0a;fill-opacity:.12;stroke:#9d7907;stroke-width:2;vector-effect:non-scaling-stroke}.hit.match{fill:#eabf20;fill-opacity:.17;stroke:#ae8100;stroke-width:1.5;vector-effect:non-scaling-stroke}.hit.selected{fill:#d7a900;fill-opacity:.13;stroke:#705900;stroke-width:2;vector-effect:non-scaling-stroke}#details{border-top:1px solid #dfe1da;padding:15px 28px;min-height:69px;background:#fbfbf9;display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}#person{font-weight:600}#periods{color:#52574c;line-height:1.7}footer{padding:10px 28px;color:#6a6f63;font-size:12px}details{display:inline}summary{cursor:pointer;display:inline;text-decoration:underline;text-underline-offset:3px}details p{max-width:850px;line-height:1.6}.sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:700px){header{padding:16px}h1{font-size:23px}.toolbar{padding:12px 16px;gap:8px}#search{width:180px}.hint,.divider{display:none}#viewport{height:55vh;min-height:280px}#details,footer{padding:12px 16px}#zoom{width:90px}}@media print{header{border:0}.toolbar,#details,footer{display:none}#viewport{height:auto!important;overflow:visible}#stage{width:100%!important;height:auto!important;aspect-ratio:7188.55/1834.81}#overlay{display:none}}
+</style>
+</head>
+<body>
+<header><h1>Waterloo Computer Science</h1><p>Faculty timeline · 1967–2026 · February 2026 edition</p></header>
+<section class="toolbar" aria-label="Timeline controls">
+<label class="sr" for="search">Find faculty</label><input id="search" type="search" placeholder="Find a faculty member" autocomplete="off">
+<span id="count" role="status" aria-live="polite">249 faculty</span><button id="previous" aria-label="Previous search result" disabled>Previous</button><button id="next" aria-label="Next search result" disabled>Next</button>
+<span class="divider" aria-hidden="true"></span><div class="zoom"><button id="out" aria-label="Zoom out">−</button><label class="sr" for="zoom">Zoom relative to fit width</label><input id="zoom" type="range" min="1" max="12" step="0.1" value="1"><button id="in" aria-label="Zoom in">+</button><output id="scale" for="zoom">100%</output><button id="fit">Fit / reset</button></div>
+<span class="hint">Zoom to read · Scroll to explore · Select a bar</span>
+</section>
+<main><div id="viewport" tabindex="0" aria-label="Scrollable faculty timeline. Use zoom controls to enlarge, then arrow keys to scroll."><div id="stage"><!--ARTWORK--><svg id="overlay" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Faculty appointments, ordered chronologically. Earlier years are at the bottom."></svg></div></div>
+<section id="details" aria-label="Selected faculty" aria-live="polite"><span id="person">Explore the timeline</span><span id="periods">Select a faculty bar or search by name to see appointment years.</span></section></main>
+<footer>249 faculty · 250 appointment intervals · <details><summary>About this chart</summary><p>The artwork preserves the original Illustrator layout, colours, portraits and lettering. Appointment details come from the extracted CSV and are approximate years. “Present” means February 2026. Lighter extensions are shown separately and interpreted as later affiliation; the original contains no text legend confirming their meaning. Lettering is preserved as vector outlines for consistent appearance. Names and dates are available as text through search and selection. Yellow and other original colour segments are preserved without assigning new meanings.</p></details></footer>
+<script id="faculty-data" type="application/json">/*FACULTY_DATA*/null</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('faculty-data').textContent);
+const $=id=>document.getElementById(id), viewport=$('viewport'),stage=$('stage'),overlay=$('overlay');
+let zoom=1,fitScale=1,selected=null,matches=[],matchIndex=-1;
+overlay.setAttribute('viewBox',`0 0 ${data.width} ${data.height}`);
+const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const period=r=>`${r.start}–${r.end??'present'}`+(r.extension_start!==null?` · Lighter extension: ${r.extension_start}–${r.extension_end??'present'}`:'');
+const nodes=data.faculty.map((p,i)=>{
+ const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+ rect.setAttribute('x',p.x);rect.setAttribute('y',Math.max(0,p.top));rect.setAttribute('width',24);rect.setAttribute('height',p.bottom-Math.max(0,p.top));
+ rect.setAttribute('class','hit');rect.setAttribute('tabindex','0');rect.setAttribute('role','button');rect.setAttribute('aria-label',`${p.name}: ${p.intervals.map(period).join('; ')}`);
+ const title=document.createElementNS(rect.namespaceURI,'title');title.textContent=rect.getAttribute('aria-label');rect.append(title);
+ rect.addEventListener('click',()=>select(i));rect.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(i)}});
+ rect.addEventListener('focus',()=>{if(zoom>1)reveal(i)});overlay.append(rect);return rect;
+});
+function layout(){fitScale=viewport.clientWidth/data.width;stage.style.width=`${data.width*fitScale*zoom}px`;stage.style.height=`${data.height*fitScale*zoom}px`;$('zoom').value=zoom;$('scale').textContent=`${Math.round(zoom*100)}%`;$('out').disabled=zoom<=1;$('in').disabled=zoom>=12;}
+function setZoom(value){const old=fitScale*zoom,cx=(viewport.scrollLeft+viewport.clientWidth/2)/old,cy=(viewport.scrollTop+viewport.clientHeight/2)/old;zoom=Math.max(1,Math.min(12,value));layout();viewport.scrollLeft=cx*fitScale*zoom-viewport.clientWidth/2;viewport.scrollTop=cy*fitScale*zoom-viewport.clientHeight/2;}
+function reveal(i){const p=data.faculty[i],s=fitScale*zoom;viewport.scrollLeft=(p.x+12)*s-viewport.clientWidth/2;viewport.scrollTop=Math.max(0,p.labelY*s-viewport.clientHeight*.55);}
+function select(i){if(selected!==null)nodes[selected].classList.remove('selected');selected=i;nodes[i].classList.add('selected');const p=data.faculty[i];$('person').textContent=p.name;$('periods').textContent=p.intervals.map(period).join(' / ');}
+function navigate(delta){if(!matches.length)return;matchIndex=(matchIndex+delta+matches.length)%matches.length;const i=matches[matchIndex];select(i);setZoom(Math.max(zoom,Math.min(12,1/fitScale)));reveal(i);$('count').textContent=`${matchIndex+1} of ${matches.length}`;}
+$('search').addEventListener('input',()=>{const query=normalize($('search').value.trim());matches=[];matchIndex=-1;nodes.forEach((node,i)=>{const match=!!query&&normalize(data.faculty[i].name).includes(query);node.classList.toggle('match',match);if(match)matches.push(i)});$('previous').disabled=$('next').disabled=!matches.length;$('count').textContent=query?`${matches.length} match${matches.length===1?'':'es'}`:'249 faculty';});
+$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();navigate(e.shiftKey?-1:1)}});
+$('previous').addEventListener('click',()=>navigate(-1));$('next').addEventListener('click',()=>navigate(1));
+$('zoom').addEventListener('input',()=>setZoom(Number($('zoom').value)));$('in').addEventListener('click',()=>setZoom(zoom*1.5));$('out').addEventListener('click',()=>setZoom(zoom/1.5));
+$('fit').addEventListener('click',()=>{zoom=1;layout();viewport.scrollTo(0,0);$('search').value='';$('search').dispatchEvent(new Event('input'));if(selected!==null)nodes[selected].classList.remove('selected');selected=null;$('person').textContent='Explore the timeline';$('periods').textContent='Select a faculty bar or search by name to see appointment years.';});
+new ResizeObserver(()=>{layout();if(selected!==null&&zoom>1)reveal(selected)}).observe(viewport);layout();
+</script>
+</body></html>
