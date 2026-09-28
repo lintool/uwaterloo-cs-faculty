@@ -1,15 +1,30 @@
 # Faculty timeline extraction
 
-`faculty.csv` contains 249 faculty members and 250 appointment intervals, in the chart's left-to-right order. Michael Liu has two rows because the chart explicitly labels appointments in 2010–2017 and 2023–present.
+`faculty.csv` contains 300 visible colour segments for 249 faculty members. Rows follow the chart’s left-to-right faculty order, then chronological segment order within each faculty member.
 
-Source: `2025 CS time line chart 50% -- increased canvas size (February 2026 update).ai`, embedded PDF chart. Names and bar geometry were extracted directly from its vector objects and checked against rendered portions of the chart. No external employment records were consulted.
+Source: `2025 CS time line chart 50% -- increased canvas size (February 2026 update).ai`, embedded PDF chart. No external employment records were consulted.
 
-- Columns: `name,start,end,extension_start,extension_end`. Dates are approximate integer years inferred from the chart, not verified appointment dates.
-- A blank `end` means the main bar continues to the chart's present (February 2026), not necessarily the present day.
-- `end` uses the visible main coloured bar. Lighter grey/purple extensions above the main bar are recorded separately in `extension_start` and `extension_end`, interpreted as later affiliation. The chart contains no text legend confirming that interpretation. Both extension fields blank means no later lighter extension is drawn. An extension start with a blank extension end means the extension reaches the chart's 2026 cutoff. Extension starts use the same year-rounding rule as main-bar ends so adjoining intervals agree.
-- Yellow sections are retained as part of continuous service. Red photo placeholders are excluded from date measurements.
-- The first cohort starts at 1967, the chart's baseline. Pale extensions below that baseline do not establish actual earlier appointment years.
-- The vertical scale is 28.8 PDF points per year, with 1967 at y=53.008. Small drawing offsets within 0.15 years for starts or 0.10 years for ends are snapped to the nearest year. Other fractional positions use the calendar year containing the endpoint. Dates close to a year boundary should be treated as approximate; for example, the Santhoshini Velusamy bar starts near 2025.88 and is recorded as 2026.
-- Original name spellings and abbreviations are preserved, including “Jeffery Shallit,” “Faheim Bacchus,” and “Keshav.” The text extraction artifact “WesG raham” is normalized to the visibly printed “Wes Graham.”
+- Columns: `name,start,end,color`.
+- `color` is a lowercase colour name, with underscores between words. The mapping to the rendered RGB hex colours from the original PDF is retained below. These names describe appearance only, without assigning a role or employment status.
+- Every visible colour change starts a new row. Yellow sections and lighter extensions are separate segments. The previous `extension_start` and `extension_end` columns have been replaced by segment rows.
+- Overlapping vector bars are resolved using the original drawing order. Adjacent segments of the same colour are merged. This corrects the earlier lighter-extension boundary estimates for Wes Graham (1996, previously 1994) and John Brzozowski (1997, previously 1996).
+- Portraits, red photo placeholders, gridlines, and pale decorative tails below the 1967 baseline are excluded. Portraits drawn over a bar do not split it.
+- Start and end are approximate integer years, not verified appointment dates. The scale is 28.8 PDF points per year, with 1967 at y=53.008. Boundary positions within 0.10 years of an integer are snapped to that year; the first start for each faculty uses a 0.15-year tolerance. Other fractional positions use the calendar year containing the boundary. One shared boundary is converted consistently for both adjoining segments.
+- A blank end means that segment reaches the chart’s 2026 cutoff, not necessarily the present day.
+- A start equal to its end represents a segment shorter than the year-level resolution, not an empty source bar. This affects George Labahn’s yellow section, Mark Friedell’s appointment, and a narrow initial grey section for Nicholas Cercone.
+- Michael Liu’s 2010–2017 and 2023–present bars remain separate, preserving the explicitly labelled break in service.
+- Names retain the source spelling, including “Jeffery Shallit,” “Faheim Bacchus,” and “Keshav.” The extraction spacing artifact “WesG raham” is normalized to “Wes Graham.”
 
-Validation: all 249 rotated faculty-name labels matched to bar shapes; all intervals have a start no later than their end; 114 intervals have blank ends; Michael Liu's two intervals match the explicit chart annotation.
+## Colours
+
+| Hex | CSV colour name | Segments |
+| --- | --- | ---: |
+| #bcbec0 | `grey` | 221 |
+| #dcddde | `light_grey` | 18 |
+| #ffe681 | `yellow` | 17 |
+| #d0b7cf | `purple` | 36 |
+| #e7d9e9 | `light_purple` | 1 |
+| #b1c0c9 | `blue_grey` | 6 |
+| #b3d99f | `green` | 1 |
+
+Validation: all 249 names matched to vector bars; 300 segments; seven colours; 129 open-ended segments; chronological, non-overlapping intervals within each faculty. The HTML viewer is generated from this segment CSV. Editing dates or colours and rerunning `python3 build_timeline.py` updates both the visible bars and their details; the generator does not read the Illustrator source.
